@@ -17,8 +17,8 @@ def get_action():
     question = [
         inquirer.List(
             "action",
-            message=colored("Выберите действие", 'light_yellow'),
-            choices=["Получить балансы для всех токенов на кошельках", "Получить баланс только конкретного токена", "Справка", "Выход"],
+            message=colored("请选择操作", 'light_yellow'),
+            choices=["获取所有钱包中所有代币的余额", "获取特定代币的余额", "帮助", "退出"],
         )
     ]
     action = inquirer.prompt(question, theme=loadth(theme))['action']
@@ -37,12 +37,12 @@ def select_chains(chains):
     question = [
         inquirer.Checkbox(
             "chains",
-            message=colored("Выберите сети, для которых нужно получить балансы (установите галочку напротив нужных вариантов ответа с помощью клавиш стрелок <- ->)", 'light_yellow'),
-            choices=["ВСЕ СЕТИ", *chains],
+            message=colored("请选择要获取余额的网络（使用箭头键左右选择答案）", 'light_yellow'),
+            choices=["全部网络", *chains],
         )
     ]
     selected_chains = inquirer.prompt(question, theme=loadth(theme))['chains']
-    if ('ВСЕ СЕТИ' in selected_chains):
+    if ('全部网络' in selected_chains):
         return chains
     return selected_chains
 
@@ -57,7 +57,7 @@ def get_ticker():
     }
 
     question = [
-        inquirer.Text("ticker", message=colored("Введите название (тикер) токена", 'light_yellow'))
+        inquirer.Text("ticker", message=colored("请输入代币名称（Ticker）", 'light_yellow'))
     ]
     ticker = inquirer.prompt(question, theme=loadth(theme))['ticker'].upper()
     return ticker
@@ -74,17 +74,16 @@ def get_minimal_amount_in_usd():
         }
 
         question = [
-                inquirer.Text("min_amount", message=colored("Введите минимальную сумму в $, начиная с которой токен будет отображен в таблице", 'light_yellow'), default="0.01")
+                inquirer.Text("min_amount", message=colored("请输入最小显示余额的金额（以$为单位）", 'light_yellow'), default="0.01")
         ]
         try:
             min_amount = float(inquirer.prompt(question, theme=loadth(theme))['min_amount'].strip())
             break
         except:
-            logger.error('Ошибка! Неверный ввод')
+            logger.error('错误！无效输入')
     if (min_amount) == 0:
         min_amount = -1
     return min_amount
-
 
 def get_num_of_threads():
     while True:
@@ -98,13 +97,13 @@ def get_num_of_threads():
         }
 
         question = [
-                inquirer.Text("num_of_threads", message=colored("Введите количество рабочих потоков", 'light_yellow'), default="3")
+                inquirer.Text("num_of_threads", message=colored("请输入工作线程数", 'light_yellow'), default="3")
         ]
         try:
             num_of_threads = int(inquirer.prompt(question, theme=loadth(theme))['num_of_threads'].strip())
             break
         except:
-            logger.error('Ошибка! Неверный ввод')
+            logger.error('错误！无效输入')
     if (num_of_threads) == 0:
         num_of_threads = 3
     return num_of_threads

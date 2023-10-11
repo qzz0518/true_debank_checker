@@ -23,7 +23,7 @@ def chain_balance(node_process, session, address, chain, ticker, min_amount):
     edit_session_headers(node_process, session, payload, 'GET', '/token/balance_list')
 
     resp = send_request(
-        node_process, 
+        node_process,
         session=session,
         method='GET',
         url=f'https://api.debank.com/token/balance_list?user_addr={address}&chain={chain}',
@@ -40,13 +40,13 @@ def chain_balance(node_process, session, address, chain, ticker, min_amount):
                     'price': coin['price'],
                     'logo_url': coin['logo_url']
                 })
-    
+
     return coins
 
 
 def show_help():
-    print('--------------------- СПРАВКА ---------------------\n> Что значит минимальная сумма токена в $?\n> Если токен будет иметь сумму в долларах, которая будет меньше чем указанное мин\
-имальное количество - он не будет занесён в таблицу\n\n> Как выбрать все сети?\n> При выборе сетей укажите пункт "ВСЕ СЕТИ" (стрелка вправо) и нажмите энтер\n\n> Что такое число рабочих потоков?\n> Это число "рабочих процессов", которые будут одновременно получать информацию по кошелькам. Чем больше потоков - тем выше шанс получить по заднице от Cloudflare. Оптимально - 3 потока\n\n> Не двигается шкала получения баланса, что делать?\n> Уменьшать число рабочих потоков / проверять наличие интернета\n\n> В чем отличия столбцов "CHAINS" и "TOTAL"?\n> Первое - это сумма монет в $ в выбранных сетях и пулах, второе - сумма монет в $ во всех сетях\n\n> Почему получение списка использованных на кошельках сетей такое долгое?\n> Потому что на данный запрос очень сильно ругается Cloudflare, поэтому работа стоит в однопоточном режиме\n\n> Другие вопросы?\n> Пиши нам в чатик https://t.me/cryptogovnozavod_chat\n--------------------- СПРАВКА ---------------------\n')
+    print(
+        '--------------------- 帮助 ---------------------\n> 什么是最小美元代币金额？\n> 如果代币的美元金额低于指定的最小金额，则不会在表格中显示\n\n> 如何选择所有网络？\n> 在选择网络时，请选择“所有网络”选项（右箭头）然后按Enter键\n\n> 什么是工作线程数？\n> 这是同时获取钱包信息的“工作进程”数量。工作线程数越多，被Cloudflare阻止的机会就越高。建议使用3个线程\n\n> 进度条不动，怎么办？\n> 减少工作线程数 / 检查网络连接\n\n> "网络" 和 "总计" 列有什么区别？\n> 第一列是所选网络和池中的所有代币的美元总值，第二列是所有网络的美元总值\n\n> 为什么获取用于钱包的网络列表需要如此长的时间？\n> 因为Cloudflare会对这个请求进行严格的检查，所以请求必须在单线程模式下执行\n\n> 有其他问题吗？\n> 在我们的聊天室中与我们联系 https://t.me/cryptogovnozavod_chat\n--------------------- 帮助 ---------------------\n')
 
 
 def get_used_chains(node_process, session, address):
@@ -56,7 +56,7 @@ def get_used_chains(node_process, session, address):
     edit_session_headers(node_process, session, payload, 'GET', '/user/used_chains')
 
     resp = send_request(
-        node_process, 
+        node_process,
         session=session,
         method='GET',
         url=f'https://api.debank.com/user/used_chains?id={address}',
@@ -125,7 +125,7 @@ def get_pools(node_process, session, wallets):
                     })
 
         return pools
-    
+
     all_pools = {}
 
     with alive_bar(len(wallets)) as bar:
@@ -165,11 +165,11 @@ def worker(queue_tasks, queue_results):
 def get_balances(wallets, ticker=None):
     session, node_process = setup_session()
 
-    logger.info('Получение списка использованных на кошельках сетей...')
+    logger.info('获取用于钱包的网络列表...')
     chains = list(get_chains(node_process, session, wallets))
-    logger.info('Получение списка пулов и баланса кошельков в них...')
+    logger.info('获取池和钱包余额信息...')
     pools = get_pools(node_process, session, wallets)
-    logger.success(f'Готово! Всего сетей и пулов: {len(chains) + len(pools)}\n')
+    logger.success(f'完成！总共的网络和池数量：{len(chains) + len(pools)}\n')
 
     min_amount = get_minimal_amount_in_usd()
     num_of_threads = get_num_of_threads()
@@ -178,7 +178,6 @@ def get_balances(wallets, ticker=None):
     coins = {chain: dict() for chain in selected_chains}
     coins.update(pools)
     pools_names = [pool for pool in pools]
-
 
     queue_tasks = Queue()
     queue_results = Queue()
@@ -192,7 +191,8 @@ def get_balances(wallets, ticker=None):
     start_time = time()
     for chain_id, chain in enumerate(selected_chains):
         if (chain not in pools_names):
-            logger.info(f'[{chain_id + 1}/{len(selected_chains) - len(set(selected_chains) & set(pools_names))}] Получение баланса в сети {chain.upper()}...')
+            logger.info(
+                f'[{chain_id + 1}/{len(selected_chains) - len(set(selected_chains) & set(pools_names))}] 获取 {chain.upper()} 网络的余额...')
 
             for wallet in wallets:
                 queue_tasks.put(('chain_balance', wallet, chain, ticker, min_amount))
@@ -204,7 +204,7 @@ def get_balances(wallets, ticker=None):
                     bar()
 
     print()
-    logger.info('Получение баланса во всех сетях для каждого кошелька')
+    logger.info('获取每个钱包的所有网络余额信息')
     for wallet in wallets:
         queue_tasks.put(('get_wallet_balance', wallet))
 
@@ -225,32 +225,32 @@ def get_balances(wallets, ticker=None):
         save_selected_to_excel(wallets, selected_chains, coins, balances, ticker)
 
     print()
-    logger.success(f'Готово! Таблица сохранена в {file_excel}')
-    logger.info(f'Затрачено времени: {round((time() - start_time) / 60, 1)} мин.\n')
+    logger.success(f'完成！表格已保存到 {file_excel}')
+    logger.info(f'花费时间: {round((time() - start_time) / 60, 1)} 分钟\n')
 
 
 def main():
     art = text2art(text="DEBANK   CHECKER", font="standart")
-    print(colored(art,'light_blue'))
-    print(colored('Автор: t.me/cryptogovnozavod\n','light_cyan'))
+    print(colored(art, 'light_blue'))
+    print(colored('作者: t.me/cryptogovnozavod\n', 'light_cyan'))
 
     with open(file_wallets, 'r') as file:
         wallets = [row.strip().lower() for row in file]
 
-    logger.success(f'Успешно загружено {len(wallets)} адресов\n')
+    logger.success(f'成功加载 {len(wallets)} 个地址\n')
 
     while True:
         action = get_action()
 
         match action:
-            case 'Получить балансы для всех токенов на кошельках':
+            case '获取所有钱包中所有代币的余额':
                 get_balances(wallets)
-            case 'Получить баланс только конкретного токена':
+            case '获取特定代币的余额':
                 ticker = get_ticker()
                 get_balances(wallets, ticker)
-            case 'Справка':
+            case '帮助':
                 show_help()
-            case 'Выход':
+            case '退出':
                 exit()
             case _:
                 pass
